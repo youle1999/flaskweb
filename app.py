@@ -1,51 +1,51 @@
 from flask import Flask, render_template, request
+import random
 
 app = Flask(__name__)
 
-# Function to calculate BMI and determine classification
-def calculate_bmi(height_cm, weight_kg):
-    height_m = height_cm / 100  # Convert height from cm to meters
-    bmi = round(weight_kg / (height_m ** 2), 2)  # Calculate BMI and round to 2 decimal places
-    
-    # Determine classification based on BMI
-    if bmi < 16:
-        judgment = "痩せすぎ"
-    elif 16 <= bmi < 17:
-        judgment = "痩せ"
-    elif 17 <= bmi < 18.5:
-        judgment = "痩せぎみ"
-    elif 18.5 <= bmi < 25:
-        judgment = "普通体重"
-    elif 25 <= bmi < 30:
-        judgment = "肥満 (前段階)"
-    elif 30 <= bmi < 35:
-        judgment = "肥満 (1度)"
-    elif 35 <= bmi < 40:
-        judgment = "肥満 (2度)"
-    else:
-        judgment = "肥満 (3度)"
-    
-    return bmi, judgment
-
 @app.route('/', methods=['GET', 'POST'])
-def index():
-    bmi = None
-    judgment = None
-    error = None
+def roulette():
+    result = None
+    points = 0
+
+    # Options for the game
+    numbers = ["00", "10", "20", "30", "40", "50"]
+    colors = ["赤", "黒"]
+    bet_types = ["数字と色の組み合わせ", "数字のみ", "色のみ"]
 
     if request.method == 'POST':
-        try:
-            height_cm = float(request.form['height_cm'])
-            weight_kg = float(request.form['weight_kg'])
-            
-            if height_cm <= 0 or weight_kg <= 0:
-                error = "身長と体重は正の数で入力してください。"
-            else:
-                bmi, judgment = calculate_bmi(height_cm, weight_kg)
-        except ValueError:
-            error = "有効な数値を入力してください。"
+        # Retrieve user selections
+        selected_number = request.form.get('number')
+        selected_color = request.form.get('color')
+        bet_type = request.form.get('bet_type')
 
-    return render_template('index.html', bmi=bmi, judgment=judgment, error=error)
+        # Computer's random selection
+        computer_number = random.choice(numbers)
+        computer_color = random.choice(colors)
+
+        # Determine points based on the bet type
+        if bet_type == "数字と色の組み合わせ":
+            if selected_number == computer_number and selected_color == computer_color:
+                points = 100
+                result = f"あなたの選択: 数字({selected_number}) 色({selected_color}) 賭ける種類({bet_type})<br>コンピューターの選択: 数字({computer_number}) 色({computer_color})<br>結果: {points}点"
+            else:
+                result = f"あなたの選択: 数字({selected_number}) 色({selected_color}) 賭ける種類({bet_type})<br>コンピューターの選択: 数字({computer_number}) 色({computer_color})<br>結果: 0点"
+
+        elif bet_type == "数字のみ":
+            if selected_number == computer_number:
+                points = 50
+                result = f"あなたの選択: 数字({selected_number}) 賭ける種類({bet_type})<br>コンピューターの選択: 数字({computer_number})<br>結果: {points}点"
+            else:
+                result = f"あなたの選択: 数字({selected_number}) 賭ける種類({bet_type})<br>コンピューターの選択: 数字({computer_number})<br>結果: 0点"
+
+        elif bet_type == "色のみ":
+            if selected_color == computer_color:
+                points = 20
+                result = f"あなたの選択: 色({selected_color}) 賭ける種類({bet_type})<br>コンピューターの選択: 色({computer_color})<br>結果: {points}点"
+            else:
+                result = f"あなたの選択: 色({selected_color}) 賭ける種類({bet_type})<br>コンピューターの選択: 色({computer_color})<br>結果: 0点"
+
+    return render_template('roulette.html', numbers=numbers, colors=colors, bet_types=bet_types, result=result)
 
 if __name__ == '__main__':
     app.run(debug=True)

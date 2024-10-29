@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>簡易ルーレット</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        h1 { color: blue; }
+        form { margin: 20px; }
+        .result { border: 2px solid red; padding: 10px; color: red; margin-top: 10px; }
+        .label { font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>簡易ルーレット</h1>
+    <form method="POST">
+        <div>
+            <span class="label">数字を選択してください:</span><br>
+            {% for number in numbers %}
+                <input type="radio" name="number" value="{{ number }}" required> {{ number }}
+            {% endfor %}
+        </div>
+        <div>
+            <span class="label">色を選択してください:</span><br>
+            {% for color in colors %}
+                <input type="radio" name="color" value="{{ color }}" required> {{ color }}
+            {% endfor %}
+        </div>
+        <div>
+            <span class="label">賭ける種類を選択してください:</span><br>
+            <select name="bet_type" required>
+                {% for bet_type in bet_types %}
+                    <option value="{{ bet_type }}">{{ bet_type }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit">賭ける</button>
+    </form>
+
+    {% if result %}
+        <div class="result">{{ result | safe }}</div>
+    {% endif %}
+</body>
+</html>
