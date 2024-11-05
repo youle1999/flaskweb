@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>割り勘計算</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #2b2d42;
+            color: black;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            width: 300px;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            margin-top: 20px;
+        }
+        h2 {
+            color: #0044cc;
+            text-align: center;
+        }
+        label, button {
+            display: block;
+            margin: 10px 0 5px;
+            color: black;
+        }
+        input[type="number"] {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .radio-group {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+        .result {
+            margin-top: 20px;
+            font-size: 1em;
+        }
+        .error {
+            color: #ff5252;
+            font-weight: bold;
+        }
+        table {
+            width: 100%;
+            margin-top: 10px;
+            border-collapse: collapse;
+            border: 1px solid #000;
+        }
+        table, th, td {
+            border: 1px solid #000;
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: #d9d9d9;
+            color: black;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>割り勘計算</h2>
+        <form id="splitForm">
+            <label for="total_amount">支払総額: </label>
+            <input type="number" id="total_amount" name="total_amount" min="200" required> 円
+            
+            <label for="num_people">人数: </label>
+            <input type="number" id="num_people" name="num_people" min="2" required>
+
+            <div class="radio-group">
+                <label>
+                    <input type="radio" name="rounding_option" value="more_pays" required> 1人が多く払う
+                </label>
+                <label>
+                    <input type="radio" name="rounding_option" value="less_pays"> 1人が少なく払う
+                </label>
+            </div>
+
+            <button type="button" onclick="calculateSplit()">計算</button>
+        </form>
+
+        <div id="result" class="result"></div>
+    </div>
+
+    <script>
+        function calculateSplit() {
+            const form = document.getElementById('splitForm');
+            const formData = new FormData(form);
+
+            fetch('/calculate', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                const resultDiv = document.getElementById('result');
+                resultDiv.innerHTML = ""; // Clear previous result
+                
+                if (data.error) {
+                    resultDiv.innerHTML = `<span class="error">${data.error}</span>`;
+                } else {
+                    // Count participants and representative payment
+                    const participantAmount = data.result[0];
+                    const representativeAmount = data.result[data.result.length - 1];
+                    const participantCount = data.result.length - 1;
+                    const totalAmount = data.result.reduce((a, b) => a + b);
+
+                    // Create a table for results
+                    const table = document.createElement('table');
+                    
+                    // Table headers
+                    const headerRow = document.createElement('tr');
+                    const personHeader = document.createElement('th');
+                    personHeader.innerText = "人数";
+                    const amountHeader = document.createElement('th');
+                    amountHeader.innerText = "支払額 (円)";
+                    headerRow.appendChild(personHeader);
+                    headerRow.appendChild(amountHeader);
+                    table.appendChild(headerRow);
+
+                    // Participant row
+                    const participantRow = document.createElement('tr');
+                    const participantCell = document.createElement('td');
+                    participantCell.innerText = `参加者 ${participantCount}`; // Number of participants
+                    const participantAmountCell = document.createElement('td');
+                    participantAmountCell.innerText = `${participantAmount}円`;
+                    participantRow.appendChild(participantCell);
+                    participantRow.appendChild(participantAmountCell);
+                    table.appendChild(participantRow);
+
+                    // Representative row
+                    const representativeRow = document.createElement('tr');
+                    const representativeCell = document.createElement('td');
+                    representativeCell.innerText = "代表 1"; // Only one representative
+                    const representativeAmountCell = document.createElement('td');
+                    representativeAmountCell.innerText = `${representativeAmount}円`;
+                    representativeRow.appendChild(representativeCell);
+                    representativeRow.appendChild(representativeAmountCell);
+                    table.appendChild(representativeRow);
+
+                    // Total row
+                    const totalRow = document.createElement('tr');
+                    const totalLabelCell = document.createElement('td');
+                    totalLabelCell.innerText = "合計";
+                    const totalAmountCell = document.createElement('td');
+                    totalAmountCell.innerText = `${totalAmount}円`;
+                    totalRow.appendChild(totalLabelCell);
+                    totalRow.appendChild(totalAmountCell);
+                    table.appendChild(totalRow);
+
+                    resultDiv.appendChild(table);
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+    </script>
+</body>
+</html>
