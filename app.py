@@ -1,52 +1,30 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request
 
 app = Flask(__name__)
 
-@app.route('/')
+# Define the color mapping based on selected colors
+color_mapping = {
+    frozenset(['red']): '赤',
+    frozenset(['green']): '緑',
+    frozenset(['blue']): '青',
+    frozenset(['red', 'green']): '黄',
+    frozenset(['red', 'blue']): 'マゼンタ',
+    frozenset(['green', 'blue']): 'シアン',
+    frozenset(['red', 'green', 'blue']): '白',
+    frozenset([]): '黒'  # No selection
+}
+
+@app.route('/', methods=['GET', 'POST'])
 def index():
-    return render_template('index.html')
+    selected_colors = set()
+    created_color = '黒'  # Default color if no selection
 
-@app.route('/calculate', methods=['POST'])
-def calculate():
-    try:
-        total_amount = int(request.form['total_amount'])
-        num_people = int(request.form['num_people'])
-        rounding_option = request.form['rounding_option']
+    if request.method == 'POST':
+        # Get selected colors from form
+        selected_colors = set(request.form.getlist('colors'))
+        created_color = color_mapping.get(frozenset(selected_colors), '黒')
 
-        if total_amount < 200 or num_people < 2:
-            return jsonify({'error': '支払総額は最低200円、人数は2人以上で入力してください。'}), 400
-
-        # Calculate the base amount per person
-        base_amount = total_amount // num_people
-
-        result = []
-
-        if rounding_option == "more_pays":
-            # Round down to the nearest hundred
-            base_amount = (base_amount // 100) * 100
-            # Calculate total paid by (num_people - 1) participants
-            subtotal = base_amount * (num_people - 1)
-            # Last person pays the remaining amount
-            last_person_amount = total_amount - subtotal
-
-            # Fill the result list
-            result = [base_amount] * (num_people - 1) + [last_person_amount]
-
-        elif rounding_option == "less_pays":
-            # Round up to the nearest hundred
-            base_amount = ((base_amount + 99) // 100) * 100
-            # Calculate total paid by (num_people - 1) participants
-            subtotal = base_amount * (num_people - 1)
-            # Last person pays the remaining amount
-            last_person_amount = total_amount - subtotal
-
-            # Fill the result list
-            result = [base_amount] * (num_people - 1) + [last_person_amount]
-
-        return jsonify({'result': result})
-
-    except ValueError:
-        return jsonify({'error': '有効な数値を入力してください。'}), 400
+    return render_template('index.html', selected_colors=selected_colors, created_color=created_color)
 
 if __name__ == '__main__':
     app.run(debug=True)
