@@ -1,5 +1,5 @@
 # Clone the repository
-git clone 
+git clone https://github.com/youle1999/flaskweb.git
 cd flaskweb
 
 # Set up a virtual environment
