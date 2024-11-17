@@ -17,7 +17,7 @@ color_mapping = {
 @app.route('/', methods=['GET', 'POST'])
 def index():
     selected_colors = set()
-    created_color = 'Black'  # Default color if no selection
+    created_color = '黒'  # Default color if no selection
 
     if request.method == 'POST':
         # Get selected colors from form
