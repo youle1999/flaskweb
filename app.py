@@ -1,40 +1,24 @@
-from flask import Flask, render_template, request
+from flask import Flask, request, redirect, url_for, render_template
 
 app = Flask(__name__)
 
-# Function to calculate GCD using the Euclidean algorithm
-def gcd(a, b):
-    while b:
-        a, b = b, a % b
-    return a
+@app.route("/", methods=["GET"])
+def index():
+    # Redirect to page 1 if no "page" parameter is provided
+    page = request.args.get("page", default=None)
+    if not page:
+        return redirect(url_for("index", page=1))
 
-@app.route("/", methods=["GET", "POST"])
-def calculate_aspect_ratio():
-    aspect_ratio = ""
-    width = ""
-    height = ""
-    error_message = ""
+    try:
+        page = int(page)
+    except ValueError:
+        return render_template("index.html", page=None, message="ページはありません。")
 
-    if request.method == "POST":
-        try:
-            width = int(request.form.get("width", 0))
-            height = int(request.form.get("height", 0))
-            
-            if width > 0 and height > 0:
-                divisor = gcd(width, height)
-                aspect_ratio = f"{width // divisor}:{height // divisor}"
-            else:
-                error_message = "Both width and height must be positive numbers."
-        except ValueError:
-            error_message = "Please enter valid numbers."
+    if page < 1 or page > 5:
+        return render_template("index.html", page=None, message="ページはありません。")
 
-    return render_template(
-        "index.html",
-        aspect_ratio=aspect_ratio,
-        width=width,
-        height=height,
-        error_message=error_message,
-    )
+    return render_template("index.html", page=page, message=None)
+
 
 if __name__ == "__main__":
     app.run(debug=True)

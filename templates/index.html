@@ -1,26 +1,28 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ja">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aspect Ratio Calculator</title>
+    <title>ページ表示</title>
 </head>
 <body>
-    <h1>アスペクト比</h1>
-    <form method="POST">
-        <label for="width">横幅:</label>
-        <input type="number" id="width" name="width" value="{{ width }}" required><br>
-        <label for="height">縦幅:</label>
-        <input type="number" id="height" name="height" value="{{ height }}" required><br>
-        <button type="submit">計算</button>
-    </form>
-
-    {% if error_message %}
-        <p style="color: red;">{{ error_message }}</p>
+    {% if message %}
+        <!-- Error Message -->
+        <h1>{{ message }}</h1>
+    {% else %}
+        <!-- Page Content -->
+        <h1>ページ{{ page }}の画面</h1>
     {% endif %}
 
-    {% if aspect_ratio %}
-        <h2>結果表示: {{ aspect_ratio }}</h2>
-    {% endif %}
+    <!-- Pagination Links -->
+    <div>
+        {% for i in range(1, 6) %}
+            {% if page == i %}
+                <span>{{ i }}</span>
+            {% else %}
+                <a href="{{ url_for('index', page=i) }}">{{ i }}</a>
+            {% endif %}
+        {% endfor %}
+    </div>
 </body>
 </html>
