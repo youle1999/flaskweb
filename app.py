@@ -2,7 +2,7 @@ from flask import Flask, render_template, request
 
 app = Flask(__name__)
 
-# Define the color mapping based on selected colors
+
 color_mapping = {
     frozenset(['red']): '赤',
     frozenset(['green']): '緑',
@@ -11,16 +11,15 @@ color_mapping = {
     frozenset(['red', 'blue']): 'マゼンタ',
     frozenset(['green', 'blue']): 'シアン',
     frozenset(['red', 'green', 'blue']): '白',
-    frozenset([]): '黒'  # No selection
+    frozenset([]): '黒⚫️⚫️'  
 }
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
     selected_colors = set()
-    created_color = 'Black'  # Default color if no selection
+    created_color = 'Black'  
 
     if request.method == 'POST':
-        # Get selected colors from form
         selected_colors = set(request.form.getlist('colors'))
         created_color = color_mapping.get(frozenset(selected_colors), '黒')
 
