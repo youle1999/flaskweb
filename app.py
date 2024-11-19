@@ -11,7 +11,7 @@ color_mapping = {
     frozenset(['red', 'blue']): 'マゼンタ',
     frozenset(['green', 'blue']): 'シアン',
     frozenset(['red', 'green', 'blue']): '白',
-    frozenset([]): '黒⚫️'  
+    frozenset([]): '黒⚫️⚫️'  
 }
 
 @app.route('/', methods=['GET', 'POST'])
