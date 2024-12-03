@@ -1,55 +1,46 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, jsonify
+import random
+from collections import Counter
 
 app = Flask(__name__)
 
-# Dictionary to map genetic combinations to possible blood types for the child
-blood_type_combinations = {
-    ('AA', 'AA'): 'A型',
-    ('AA', 'AO'): 'A型',
-    ('AA', 'BB'): 'AB型',
-    ('AA', 'BO'): 'A型, AB型',
-    ('AA', 'OO'): 'A型',
-    ('AA', 'AB'): 'A型, AB型',
-    ('AO', 'AA'): 'A型',
-    ('AO', 'AO'): 'A型, O型',
-    ('AO', 'BB'): 'AB型',
-    ('AO', 'BO'): 'A型, B型, AB型, O型',
-    ('AO', 'OO'): 'A型, O型',
-    ('AO', 'AB'): 'A型, AB型, B型',
-    ('BB', 'AA'): 'AB型',
-    ('BB', 'AO'): 'A型, AB型',
-    ('BB', 'BB'): 'B型',
-    ('BB', 'BO'): 'B型',
-    ('BB', 'OO'): 'B型',
-    ('BB', 'AB'): 'B型, AB型',
-    ('BO', 'AA'): 'A型, AB型',
-    ('BO', 'AO'): 'A型, B型, AB型, O型',
-    ('BO', 'BB'): 'B型',
-    ('BO', 'BO'): 'B型, O型',
-    ('BO', 'OO'): 'B型, O型',
-    ('BO', 'AB'): 'A型, B型, AB型, O型',
-    ('OO', 'AA'): 'A型',
-    ('OO', 'AO'): 'A型, O型',
-    ('OO', 'BB'): 'B型',
-    ('OO', 'BO'): 'B型, O型',
-    ('OO', 'OO'): 'O型',
-    ('OO', 'AB'): 'A型, B型',
-    ('AB', 'AA'): 'A型, AB型',
-    ('AB', 'AO'): 'A型, AB型, B型',
-    ('AB', 'BB'): 'B型, AB型',
-    ('AB', 'BO'): 'A型, B型, AB型, O型',
-    ('AB', 'OO'): 'A型, B型',
-    ('AB', 'AB'): 'A型, B型, AB型'
-}
+# Function to determine poker hand role
+def determine_role(numbers):
+    count = Counter(numbers)
+    counts = sorted(count.values(), reverse=True)
 
-@app.route('/', methods=['GET', 'POST'])
-def blood_type():
-    result = None
-    if request.method == 'POST':
-        mother_genotype = request.form.get('mother_genotype')
-        father_genotype = request.form.get('father_genotype')
-        result = blood_type_combinations.get((mother_genotype, father_genotype), "不明")
-    return render_template('blood_type.html', result=result)
+    if counts == [4, 1]:
+        return "フォーカード"  # Four of a Kind
+    elif counts == [3, 2]:
+        return "フルハウス"  # Full House
+    elif counts == [3, 1, 1]:
+        return "スリーカード"  # Three of a Kind
+    elif counts == [2, 2, 1]:
+        return "ツーペア"  # Two Pair
+    elif counts == [2, 1, 1, 1]:
+        return "ワンペア"  # One Pair
+    else:
+        return "ノーハンド"  # No Hand
 
-if __name__ == '__main__':
+@app.route("/")
+def index():
+    # Generate random initial cards
+    initial_cards = [random.randint(1, 5) for _ in range(5)]
+    return render_template("index.html", initial_cards=initial_cards)
+
+@app.route("/flip_card", methods=["POST"])
+def flip_card():
+    # Generate random card value between 1 and 5
+    card_value = random.randint(1, 5)
+    return jsonify({"card_value": card_value})
+
+@app.route("/determine_role", methods=["POST"])
+def determine_poker_role():
+    # Get the numbers sent from the frontend
+    numbers = request.json.get("numbers")
+    # Determine the poker role
+    role = determine_role(numbers)
+    return jsonify({"role": role})
+
+if __name__ == "__main__":
     app.run(debug=True)
