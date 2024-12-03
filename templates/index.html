@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ポーカーの役を表示せよ</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 20px;
+            background-color: #f8f9fa;
+        }
+        h1 {
+            color: blue;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        .cards-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .card-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .card {
+            width: 80px;
+            height: 120px;
+            border: 2px solid black;
+            text-align: center;
+            line-height: 120px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            background-color: white;
+            color: black;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+        button {
+            padding: 10px 15px;
+            font-size: 14px;
+            color: white;
+            background-color: #007bff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .result {
+            font-size: 18px;
+            margin-top: 20px;
+            padding: 10px;
+            background-color: white;
+            border: 2px solid black;
+            border-radius: 8px;
+            width: fit-content;
+            margin: 20px auto;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .result h2 {
+            margin: 0;
+            font-size: 20px;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <h1>ポーカーの役を表示せよ</h1>
+    <div class="cards-container">
+        <div class="card-wrapper">
+            <div class="card" id="card-1">[カード]</div>
+            <button onclick="flipCard(1)">めくる</button>
+        </div>
+        <div class="card-wrapper">
+            <div class="card" id="card-2">[カード]</div>
+            <button onclick="flipCard(2)">めくる</button>
+        </div>
+        <div class="card-wrapper">
+            <div class="card" id="card-3">[カード]</div>
+            <button onclick="flipCard(3)">めくる</button>
+        </div>
+        <div class="card-wrapper">
+            <div class="card" id="card-4">[カード]</div>
+            <button onclick="flipCard(4)">めくる</button>
+        </div>
+        <div class="card-wrapper">
+            <div class="card" id="card-5">[カード]</div>
+            <button onclick="flipCard(5)">めくる</button>
+        </div>
+    </div>
+    <div class="result">
+        <h2>結果表示</h2>
+        <p>役: <span id="role">なし</span></p>
+    </div>
+    <script>
+        const cardValues = [null, null, null, null, null];
+
+        function flipCard(cardIndex) {
+            fetch("/flip_card", { method: "POST" })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById(`card-${cardIndex}`).textContent = data.card_value;
+                    cardValues[cardIndex - 1] = data.card_value;
+
+                    // Check if all cards are flipped
+                    if (cardValues.every(value => value !== null)) {
+                        determineRole();
+                    }
+                });
+        }
+
+        function determineRole() {
+            fetch("/determine_role", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ numbers: cardValues })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById("role").textContent = data.role;
+                });
+        }
+    </script>
+</body>
+</html>
